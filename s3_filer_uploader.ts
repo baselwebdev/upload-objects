@@ -1,27 +1,39 @@
-import {config} from 'aws-sdk/index';
 import S3 from  'aws-sdk/clients/s3';
 import fs from 'fs';
+import glob from 'glob';
 
-config.update({region: 'eu-west-2'});
-
-const File = fs.createReadStream(__dirname + '/test2.html')
-
-let myS3 = new S3();
-
-const S3Params: S3.Types.PutObjectRequest = {
-    Bucket: 'baselwebdev2',
-    Key: 'test2.html',
-    Body: File,
-    ContentType: 'text/html',
-    ACL: 'public-read'
+const UploadFileDirectory = __dirname + '/uploads/'
+// get a list of all files for a given path
+const GlobOptions = {
+    'cwd':  UploadFileDirectory,
 };
+const HtmlFiles = glob.sync("**/*.html", GlobOptions);
+const CssFiles = glob.sync("**/*.css", GlobOptions);
+const JsFiles = glob.sync("**/*.js", GlobOptions);
 
-const S3Options: S3.ManagedUpload.ManagedUploadOptions = {}
+UploadFiles(HtmlFiles, 'text/html');
+UploadFiles(CssFiles, 'text/css');
+UploadFiles(JsFiles, 'text/js');
 
-myS3.upload(S3Params, S3Options, (error: Error, data: S3.ManagedUpload.SendData) => {
-    if (error) {
-        console.log('Error', error);
-    } else {
-        console.log('Success', data);
-    }
-});
+function UploadFiles(CustomElementFiles: string[], ContentType: string) {
+    let myS3 = new S3();
+    const S3Options: S3.ManagedUpload.ManagedUploadOptions = {}
+    CustomElementFiles.map((filePath: string) => {
+        const File = fs.createReadStream(UploadFileDirectory + filePath)
+        const S3Params: S3.Types.PutObjectRequest = {
+            Bucket: 'baselwebdev2',
+            Key: filePath,
+            Body: File,
+            ContentType: ContentType,
+            ACL: 'public-read'
+         };
+
+        myS3.upload(S3Params, S3Options, (error: Error, data: S3.ManagedUpload.SendData) => {
+            if (error) {
+                console.log('Error', error);
+            } else {
+                console.log('Success', data);
+            }
+        });
+    });
+}
