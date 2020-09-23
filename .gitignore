@@ -1,4 +1,4 @@
 node_modules/
-*.js
+s3_filer_uploader.js
 .idea
-uploads
+uploads/files/
