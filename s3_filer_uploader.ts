@@ -1,9 +1,11 @@
 import S3 from 'aws-sdk/clients/s3';
 import fs from 'fs';
 import glob from 'glob';
+import { AWSError } from 'aws-sdk/lib/error';
 
 const myS3 = new S3();
 const bucketName = 'baselwebdev2';
+
 const uploadFileDirectory = __dirname + '/uploads/files/';
 // get a list of all files for a given path
 const globOptions = {
@@ -15,20 +17,34 @@ const jsFiles = glob.sync('**/*.js', globOptions);
 const jsChunks = glob.sync('**/*.js.map', globOptions);
 const cssChunks = glob.sync('**/*.css.map', globOptions);
 
-uploadFiles(htmlFiles, 'text/html');
-uploadFiles(cssFiles, 'text/css');
-uploadFiles(jsFiles, 'text/js');
-uploadFiles(cssChunks, 'text/css');
-uploadFiles(jsChunks, 'text/js');
+try {
+    (async () => {
+        await myS3.listObjectsV2({ Bucket: bucketName }, (err: AWSError, data: S3.Types.ListObjectsOutput) => {
+            if (err) {
+                throw Error(err.message);
+            } else {
+                console.log(data);
+            }
+        });
+    })();
+} catch (e) {
+    console.log(e);
+}
 
-function uploadFiles(customElementFiles: string[], contentType: string) {
+uploadFiles(htmlFiles, 'text/html', 1000);
+uploadFiles(cssFiles, 'text/css', 1000);
+uploadFiles(jsFiles, 'text/js', 1000);
+uploadFiles(cssChunks, 'text/css', 1000);
+uploadFiles(jsChunks, 'text/js', 1000);
+
+function uploadFiles(customElementFiles: string[], contentType: string, index: number) {
     const s3Options: S3.ManagedUpload.ManagedUploadOptions = {};
 
     customElementFiles.map((filePath: string) => {
         const file = fs.createReadStream(uploadFileDirectory + filePath);
         const s3Params: S3.Types.PutObjectRequest = {
             Bucket: bucketName,
-            Key: filePath,
+            Key: index + '/' + filePath,
             Body: file,
             ContentType: contentType,
             ACL: 'public-read',
