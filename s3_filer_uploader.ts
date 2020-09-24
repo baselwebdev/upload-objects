@@ -2,37 +2,38 @@ import S3 from 'aws-sdk/clients/s3';
 import fs from 'fs';
 import glob from 'glob';
 
-const UploadFileDirectory = __dirname + '/uploads/files/';
+const myS3 = new S3();
+const bucketName = 'baselwebdev2';
+const uploadFileDirectory = __dirname + '/uploads/files/';
 // get a list of all files for a given path
-const GlobOptions = {
-    cwd: UploadFileDirectory,
+const globOptions = {
+    cwd: uploadFileDirectory,
 };
-const HtmlFiles = glob.sync('**/*.html', GlobOptions);
-const CssFiles = glob.sync('**/*.css', GlobOptions);
-const JsFiles = glob.sync('**/*.js', GlobOptions);
-const JsChunks = glob.sync('**/*.js.map', GlobOptions);
-const CssChunks = glob.sync('**/*.css.map', GlobOptions);
+const htmlFiles = glob.sync('**/*.html', globOptions);
+const cssFiles = glob.sync('**/*.css', globOptions);
+const jsFiles = glob.sync('**/*.js', globOptions);
+const jsChunks = glob.sync('**/*.js.map', globOptions);
+const cssChunks = glob.sync('**/*.css.map', globOptions);
 
-UploadFiles(HtmlFiles, 'text/html');
-UploadFiles(CssFiles, 'text/css');
-UploadFiles(JsFiles, 'text/js');
-UploadFiles(JsChunks, 'text/js');
-UploadFiles(CssChunks, 'text/js');
+uploadFiles(htmlFiles, 'text/html');
+uploadFiles(cssFiles, 'text/css');
+uploadFiles(jsFiles, 'text/js');
+uploadFiles(cssChunks, 'text/css');
+uploadFiles(jsChunks, 'text/js');
 
-function UploadFiles(CustomElementFiles: string[], ContentType: string) {
-    let myS3 = new S3();
-    const S3Options: S3.ManagedUpload.ManagedUploadOptions = {};
-    CustomElementFiles.map((filePath: string) => {
-        const File = fs.createReadStream(UploadFileDirectory + filePath);
-        const S3Params: S3.Types.PutObjectRequest = {
-            Bucket: 'baselwebdev2',
+function uploadFiles(customElementFiles: string[], contentType: string) {
+    const s3Options: S3.ManagedUpload.ManagedUploadOptions = {};
+    customElementFiles.map((filePath: string) => {
+        const file = fs.createReadStream(uploadFileDirectory + filePath);
+        const s3Params: S3.Types.PutObjectRequest = {
+            Bucket: bucketName,
             Key: filePath,
-            Body: File,
-            ContentType: ContentType,
+            Body: file,
+            ContentType: contentType,
             ACL: 'public-read',
         };
 
-        myS3.upload(S3Params, S3Options, (error: Error, data: S3.ManagedUpload.SendData) => {
+        myS3.upload(s3Params, s3Options, (error: Error, data: S3.ManagedUpload.SendData) => {
             if (error) {
                 console.log('Error', error);
             } else {
