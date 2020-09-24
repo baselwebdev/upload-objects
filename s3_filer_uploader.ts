@@ -22,9 +22,7 @@ const getListOfObjects: Promise<number> = new Promise((resolve, reject) => {
         { Bucket: bucketName, Prefix: objectPrefix },
         (err: AWSError, data: S3.Types.ListObjectsOutput) => {
             if (err) return reject(err);
-            console.log(data);
             resolve(data.Contents?.length);
-            // process.exit(8);
         },
     );
 });
@@ -32,7 +30,7 @@ const getListOfObjects: Promise<number> = new Promise((resolve, reject) => {
 try {
     (async () => {
         const index: number = await getListOfObjects;
-        const formattedIndex = formatIndex(index);
+        const formattedIndex: string = formatIndex(index);
 
         uploadFiles(htmlFiles, 'text/html', formattedIndex);
         uploadFiles(cssFiles, 'text/css', formattedIndex);
@@ -44,7 +42,7 @@ try {
     console.log(e);
 }
 
-function formatIndex(index: number) {
+function formatIndex(index: number): string {
     let formattedNumber = index.toString();
 
     if (index < 10) {
@@ -58,7 +56,7 @@ function formatIndex(index: number) {
     return formattedNumber;
 }
 
-function uploadFiles(customElementFiles: string[], contentType: string, index: string) {
+function uploadFiles(customElementFiles: string[], contentType: string, index: string): void {
     const s3Options: S3.ManagedUpload.ManagedUploadOptions = {};
 
     customElementFiles.map((filePath: string) => {
