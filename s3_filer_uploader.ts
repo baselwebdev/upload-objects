@@ -5,6 +5,7 @@ import { AWSError } from 'aws-sdk/lib/error';
 
 const myS3 = new S3();
 const bucketName = 'baselwebdev2';
+const objectPrefix = 'term_selector' + '_';
 
 const uploadFileDirectory = __dirname + '/uploads/files/';
 const globOptions = {
@@ -17,10 +18,15 @@ const jsChunks = glob.sync('**/*.js.map', globOptions);
 const cssChunks = glob.sync('**/*.css.map', globOptions);
 
 const getListOfObjects: Promise<number> = new Promise((resolve, reject) => {
-    myS3.listObjectsV2({ Bucket: bucketName }, (err: AWSError, data: S3.Types.ListObjectsOutput) => {
-        if (err) return reject(err);
-        resolve(data.Contents?.length);
-    });
+    myS3.listObjectsV2(
+        { Bucket: bucketName, Prefix: objectPrefix },
+        (err: AWSError, data: S3.Types.ListObjectsOutput) => {
+            if (err) return reject(err);
+            console.log(data);
+            resolve(data.Contents?.length);
+            // process.exit(8);
+        },
+    );
 });
 
 try {
@@ -59,7 +65,7 @@ function uploadFiles(customElementFiles: string[], contentType: string, index: s
         const file = fs.createReadStream(uploadFileDirectory + filePath);
         const s3Params: S3.Types.PutObjectRequest = {
             Bucket: bucketName,
-            Key: 'term_selector_' + index + '/' + filePath,
+            Key: objectPrefix + index + '/' + filePath,
             Body: file,
             ContentType: contentType,
             ACL: 'public-read',
