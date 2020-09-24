@@ -23,6 +23,7 @@ uploadFiles(jsChunks, 'text/js');
 
 function uploadFiles(customElementFiles: string[], contentType: string) {
     const s3Options: S3.ManagedUpload.ManagedUploadOptions = {};
+
     customElementFiles.map((filePath: string) => {
         const file = fs.createReadStream(uploadFileDirectory + filePath);
         const s3Params: S3.Types.PutObjectRequest = {
