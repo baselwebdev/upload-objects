@@ -17,25 +17,25 @@ const jsFiles = glob.sync('**/*.js', globOptions);
 const jsChunks = glob.sync('**/*.js.map', globOptions);
 const cssChunks = glob.sync('**/*.css.map', globOptions);
 
+const getListOfObjects = new Promise((resolve, reject) => {
+    myS3.listObjectsV2({ Bucket: bucketName }, (err: AWSError, data: S3.Types.ListObjectsOutput) => {
+        if (err) return reject(err);
+        resolve(data);
+    });
+});
+
 try {
     (async () => {
-        await myS3.listObjectsV2({ Bucket: bucketName }, (err: AWSError, data: S3.Types.ListObjectsOutput) => {
-            if (err) {
-                throw Error(err.message);
-            } else {
-                console.log(data);
-            }
-        });
+        await getListOfObjects;
+        uploadFiles(htmlFiles, 'text/html', 1000);
+        uploadFiles(cssFiles, 'text/css', 1000);
+        uploadFiles(jsFiles, 'text/js', 1000);
+        uploadFiles(cssChunks, 'text/css', 1000);
+        uploadFiles(jsChunks, 'text/js', 1000);
     })();
 } catch (e) {
     console.log(e);
 }
-
-uploadFiles(htmlFiles, 'text/html', 1000);
-uploadFiles(cssFiles, 'text/css', 1000);
-uploadFiles(jsFiles, 'text/js', 1000);
-uploadFiles(cssChunks, 'text/css', 1000);
-uploadFiles(jsChunks, 'text/js', 1000);
 
 function uploadFiles(customElementFiles: string[], contentType: string, index: number) {
     const s3Options: S3.ManagedUpload.ManagedUploadOptions = {};
