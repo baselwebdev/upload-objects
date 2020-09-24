@@ -2,6 +2,7 @@ import S3 from 'aws-sdk/clients/s3';
 import fs from 'fs';
 import glob from 'glob';
 import { AWSError } from 'aws-sdk/lib/error';
+import { type } from 'os';
 
 const myS3 = new S3();
 const bucketName = 'baselwebdev2';
@@ -22,7 +23,9 @@ const getListOfObjects: Promise<number> = new Promise((resolve, reject) => {
         { Bucket: bucketName, Prefix: objectPrefix },
         (err: AWSError, data: S3.Types.ListObjectsOutput) => {
             if (err) return reject(err);
-            resolve(data.Contents?.length);
+            const index: number = findIndex(data.Contents as S3.ObjectList);
+
+            resolve(index);
         },
     );
 });
@@ -54,6 +57,39 @@ function formatIndex(index: number): string {
     }
 
     return formattedNumber;
+}
+
+function findIndex(objects: S3.ObjectList) {
+    const index = 0;
+
+    if (objects.length > 0) {
+        const objectKeys = objects
+            .map((o: S3.Object) => {
+                return o.Key;
+            })
+            .map((path: string | undefined) => {
+                if (typeof path === 'string') {
+                    const delimitedString: string[] = path.split('/');
+
+                    return delimitedString[0];
+                } else {
+                    return [];
+                }
+            })
+            .map((path: string | never[]) => {
+                if (typeof path === 'string') {
+                    return path.split('term_selector')[1];
+                }
+
+                return [];
+            });
+
+        console.log(objectKeys);
+
+        return index;
+    }
+
+    return index;
 }
 
 function uploadFiles(customElementFiles: string[], contentType: string, index: string): void {
