@@ -2,7 +2,6 @@ import S3 from 'aws-sdk/clients/s3';
 import fs from 'fs';
 import glob from 'glob';
 import { AWSError } from 'aws-sdk/lib/error';
-import { type } from 'os';
 
 const myS3 = new S3();
 const bucketName = 'baselwebdev2';
@@ -20,20 +19,20 @@ const cssChunks = glob.sync('**/*.css.map', globOptions);
 
 const getListOfObjects: Promise<number> = new Promise((resolve, reject) => {
     myS3.listObjectsV2(
-        { Bucket: 'aaaa', Prefix: objectPrefix },
+        { Bucket: 'baselwebdev2', Prefix: objectPrefix },
         (err: AWSError, data: S3.Types.ListObjectsOutput) => {
             if (err) {
-                reject(err)
+                return reject(err);
             }
-            const index: number = findIndex(data.Contents as S3.ObjectList);
+            const index: number = findIndex(data.Contents as S3.ObjectList) as number;
 
-            resolve(index);
+            return resolve(index);
         },
     );
 });
 
-try {
-    (async () => {
+(async () => {
+    try {
         const index: number = await getListOfObjects;
         const formattedIndex: string = formatIndex(index);
 
@@ -42,10 +41,10 @@ try {
         uploadFiles(jsFiles, 'text/js', formattedIndex);
         uploadFiles(cssChunks, 'text/css', formattedIndex);
         uploadFiles(jsChunks, 'text/js', formattedIndex);
-    })();
-} catch (e) {
-    console.log(e);
-}
+    } catch (e) {
+        console.log(e.message);
+    }
+})();
 
 function formatIndex(index: number): string {
     let formattedNumber = index.toString();
@@ -61,14 +60,35 @@ function formatIndex(index: number): string {
     return formattedNumber;
 }
 
+function processFormattedNumber(index: string): number {
+    const brokenIndexDigits = index.split('');
+    const brokenIndexDigitsCount = brokenIndexDigits.length;
+    const number: string[] = [];
+
+    for (let i = 0; i < brokenIndexDigitsCount; i++) {
+        if (brokenIndexDigits[i] !== '0') {
+            number.push(brokenIndexDigits[i]);
+        }
+    }
+
+    if (number.length === 0) {
+        number.push('0');
+    }
+
+    return parseInt(number.join(''));
+}
+
 function findIndex(objects: S3.ObjectList) {
-    const index = 0;
+    let index = 0;
 
     if (objects.length > 0) {
-        const objectKeys = objects
+        const objectIndex = objects
+            // Return all the key values
             .map((o: S3.Object) => {
                 return o.Key;
             })
+            // Split the strings by / which indicates the url pattern.
+            // Return the first part of the url pattern which contains the index numbers.
             .map((path: string | undefined) => {
                 if (typeof path === 'string') {
                     const delimitedString: string[] = path.split('/');
@@ -78,17 +98,27 @@ function findIndex(objects: S3.ObjectList) {
                     return [];
                 }
             })
+            // Split the url pattern by the string of th
             .map((path: string | never[]) => {
                 if (typeof path === 'string') {
-                    return path.split('term_selector')[1];
+                    return path.split(objectPrefix)[1];
                 }
 
                 return [];
-            });
+            })
+            .filter((value, index, self) => {
+                return self.indexOf(value) === index;
+            })
+            .map((index: string | never[]) => {
+                if (typeof index === 'string') {
+                    return processFormattedNumber(index);
+                }
 
-        console.log(objectKeys);
+                return [];
+            })
+            .sort();
 
-        return index;
+        index = objectIndex[0] as number;
     }
 
     return index;
