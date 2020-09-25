@@ -17,7 +17,7 @@ const jsFiles = glob.sync('**/*.js', globOptions);
 const jsChunks = glob.sync('**/*.js.map', globOptions);
 const cssChunks = glob.sync('**/*.css.map', globOptions);
 
-const getListOfObjects: Promise<number> = new Promise((resolve, reject) => {
+const getNextIndex: Promise<number> = new Promise((resolve, reject) => {
     myS3.listObjectsV2(
         { Bucket: 'baselwebdev2', Prefix: objectPrefix },
         (err: AWSError, data: S3.Types.ListObjectsOutput) => {
@@ -26,14 +26,14 @@ const getListOfObjects: Promise<number> = new Promise((resolve, reject) => {
             }
             const index: number = findIndex(data.Contents as S3.ObjectList) as number;
 
-            return resolve(index);
+            return resolve(index + 1);
         },
     );
 });
 
 (async () => {
     try {
-        const index: number = await getListOfObjects;
+        const index: number = await getNextIndex;
         const formattedIndex: string = formatIndex(index);
 
         uploadFiles(htmlFiles, 'text/html', formattedIndex);
@@ -78,7 +78,7 @@ function processFormattedNumber(index: string): number {
     return parseInt(number.join(''));
 }
 
-function findIndex(objects: S3.ObjectList) {
+function findIndex(objects: S3.ObjectList): number {
     let index = 0;
 
     if (objects.length > 0) {
