@@ -20,9 +20,11 @@ const cssChunks = glob.sync('**/*.css.map', globOptions);
 
 const getListOfObjects: Promise<number> = new Promise((resolve, reject) => {
     myS3.listObjectsV2(
-        { Bucket: bucketName, Prefix: objectPrefix },
+        { Bucket: 'aaaa', Prefix: objectPrefix },
         (err: AWSError, data: S3.Types.ListObjectsOutput) => {
-            if (err) return reject(err);
+            if (err) {
+                reject(err)
+            }
             const index: number = findIndex(data.Contents as S3.ObjectList);
 
             resolve(index);
