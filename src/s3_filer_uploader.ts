@@ -7,7 +7,7 @@ const myS3 = new S3();
 const bucketName = 'baselwebdev2';
 const objectPrefix = 'term_selector' + '_';
 
-const uploadFileDirectory = __dirname + '/uploads/files/';
+const uploadFileDirectory = __dirname + '/../uploads/files/';
 const globOptions = {
     cwd: uploadFileDirectory,
 };
@@ -84,41 +84,37 @@ function findIndex(objects: S3.ObjectList) {
     if (objects.length > 0) {
         const objectIndex = objects
             // Return all the key values
+            // todo: lose the ambiguity of a chance that key might be undefined.
             .map((o: S3.Object) => {
-                return o.Key;
+                if (o.Key !== undefined) {
+                    return o.Key;
+                } else {
+                    return '';
+                }
             })
             // Split the strings by / which indicates the url pattern.
             // Return the first part of the url pattern which contains the index numbers.
-            .map((path: string | undefined) => {
-                if (typeof path === 'string') {
-                    const delimitedString: string[] = path.split('/');
+            .map((path: string) => {
+                const delimitedString: string[] = path.split('/');
 
-                    return delimitedString[0];
-                } else {
-                    return [];
-                }
+                return delimitedString[0];
             })
             // Split the url pattern by the string of th
-            .map((path: string | never[]) => {
-                if (typeof path === 'string') {
-                    return path.split(objectPrefix)[1];
-                }
-
-                return [];
+            .map((path: string) => {
+                return path.split(objectPrefix)[1];
             })
+            // Return only the unique numbers
             .filter((value, index, self) => {
                 return self.indexOf(value) === index;
             })
-            .map((index: string | never[]) => {
-                if (typeof index === 'string') {
-                    return processFormattedNumber(index);
-                }
-
-                return [];
+            // Turn the strings into numbers
+            .map((index: string) => {
+                return processFormattedNumber(index);
             })
-            .sort();
+            // Sort the number by the highest numbers
+            .sort((a: number, b: number) => b - a);
 
-        index = objectIndex[0] as number;
+        index = objectIndex[0];
     }
 
     return index;
