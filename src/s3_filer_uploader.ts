@@ -6,6 +6,7 @@ import { AWSError } from 'aws-sdk/lib/error';
 const myS3 = new S3();
 const bucketName = 'baselwebdev2';
 const objectPrefix = 'term_selector' + '_';
+const indexPath = '/' + 'Index.html';
 
 const uploadFileDirectory = __dirname + '/../uploads/files/';
 const globOptions = {
@@ -19,7 +20,7 @@ const cssChunks = glob.sync('**/*.css.map', globOptions);
 
 const getNextIndex: Promise<number> = new Promise((resolve, reject) => {
     myS3.listObjectsV2(
-        { Bucket: 'baselwebdev2', Prefix: objectPrefix },
+        { Bucket: bucketName, Prefix: objectPrefix },
         (err: AWSError, data: S3.Types.ListObjectsOutput) => {
             if (err) {
                 return reject(err);
@@ -41,6 +42,10 @@ const getNextIndex: Promise<number> = new Promise((resolve, reject) => {
         uploadFiles(jsFiles, 'text/js', formattedIndex);
         uploadFiles(cssChunks, 'text/css', formattedIndex);
         uploadFiles(jsChunks, 'text/js', formattedIndex);
+
+        console.log(
+            'Url is: ' + 'https://baselwebdev2.s3.eu-west-2.amazonaws.com/' + objectPrefix + formattedIndex + indexPath,
+        );
     } catch (e) {
         console.log(e.message);
     }
@@ -137,7 +142,7 @@ function uploadFiles(customElementFiles: string[], contentType: string, index: s
             if (error) {
                 console.log('Error', error);
             } else {
-                console.log('Success', data);
+                console.log('Successfully uploaded file to: ' + data.Location);
             }
         });
     });
