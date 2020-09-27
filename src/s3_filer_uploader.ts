@@ -97,19 +97,19 @@ function formatIndex(index: number): string {
 function processFormattedNumber(index: string): number {
     const brokenIndexDigits = index.split('');
     const brokenIndexDigitsCount = brokenIndexDigits.length;
-    const number: string[] = [];
 
     for (let i = 0; i < brokenIndexDigitsCount; i++) {
         if (brokenIndexDigits[i] !== '0') {
-            number.push(brokenIndexDigits[i]);
+            break;
         }
+        brokenIndexDigits.splice(i, 1);
     }
 
-    if (number.length === 0) {
-        number.push('0');
+    if (brokenIndexDigits.length === 0) {
+        brokenIndexDigits.push('0');
     }
 
-    return parseInt(number.join(''));
+    return parseInt(brokenIndexDigits.join(''));
 }
 
 function findIndex(objects: S3.ObjectList): number {
