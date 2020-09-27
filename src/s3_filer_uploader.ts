@@ -2,13 +2,42 @@ import S3 from 'aws-sdk/clients/s3';
 import fs from 'fs';
 import glob from 'glob';
 import { AWSError } from 'aws-sdk/lib/error';
+import yargs from 'yargs';
+
+const projectPath = __dirname + '/../';
+
+yargs
+    .option('bn', {
+        alias: 'bucketname',
+        describe: 'The AWS bucketname',
+        type: 'string',
+        demandOption: true,
+    })
+    .option('dpf', {
+        alias: 'directoryprefix',
+        describe: 'The prefix for the directory',
+        type: 'string',
+        demandOption: true,
+    })
+    .option('ifp', {
+        alias: 'entryfile',
+        describe: 'The entry point file',
+        type: 'string',
+        default: 'Index.html',
+    })
+    .option('ufp', {
+        alias: 'uploadfilepath',
+        describe: 'The path to files you want to upload to S3',
+        type: 'string',
+        default: projectPath + 'uploads/files/',
+    }).argv;
 
 const myS3 = new S3();
-const bucketName = 'baselwebdev2';
-const objectPrefix = 'term_selector' + '_';
-const indexPath = '/' + 'Index.html';
+const bucketName = yargs.argv.bucketname as string;
+const objectPrefix = (yargs.argv.directoryprefix as string) + '_';
+const indexPath = '/' + yargs.argv.entryfile;
 
-const uploadFileDirectory = __dirname + '/../uploads/files/';
+const uploadFileDirectory = yargs.argv.uploadfilepath as string;
 const globOptions = {
     cwd: uploadFileDirectory,
 };

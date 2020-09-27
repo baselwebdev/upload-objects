@@ -1,9 +1,12 @@
 {
+  "version": "0.0.1",
   "dependencies": {
+    "@types/yargs": "^15.0.7",
     "aws-sdk": "^2.748.0",
     "glob": "^7.1.6",
     "prettier": "^2.1.2",
-    "typescript": "^4.0.2"
+    "typescript": "^4.0.2",
+    "yargs": "^16.0.3"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.2.0",
