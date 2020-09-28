@@ -6,6 +6,7 @@
     "alwaysStrict": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
+    "outDir": "dist",
     /* Additional Checks */
     "strict": true,
     "strictNullChecks": true,
