@@ -1,3 +1,7 @@
+/**
+ * @file Upload files to S3.
+ *
+ * */
 import S3 from 'aws-sdk/clients/s3';
 import fs from 'fs';
 import glob from 'glob';
@@ -80,6 +84,10 @@ const getNextIndex: Promise<number> = new Promise((resolve, reject) => {
     }
 })();
 
+/**
+ * @param index - The index number.
+ * @returns Transformed number index into string value in format of of '0000.
+ */
 function formatIndex(index: number): string {
     let formattedNumber = index.toString();
 
@@ -94,6 +102,10 @@ function formatIndex(index: number): string {
     return formattedNumber;
 }
 
+/**
+ * @param index - The index number.
+ * @returns Transformed number index into number type value.
+ */
 function processFormattedNumber(index: string): number {
     const brokenIndexDigits = index.split('');
     const brokenIndexDigitsCount = brokenIndexDigits.length;
@@ -112,6 +124,10 @@ function processFormattedNumber(index: string): number {
     return parseInt(brokenIndexDigits.join(''));
 }
 
+/**
+ * @param objects - The aws S3 object list items.
+ * @returns Return the index value for the latest object in the S3 object list for the given prefix.
+ */
 function findIndex(objects: S3.ObjectList): number {
     let index = 0;
 
@@ -154,6 +170,11 @@ function findIndex(objects: S3.ObjectList): number {
     return index;
 }
 
+/**
+ * @param customElementFiles - The files to be uploaded to S3.
+ * @param contentType - The type of files to be uploaded to S3.
+ * @param index - The index value attached to directory name that the uploaded files will be part of.
+ */
 function uploadFiles(customElementFiles: string[], contentType: string, index: string): void {
     const s3Options: S3.ManagedUpload.ManagedUploadOptions = {};
 
