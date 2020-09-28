@@ -69,24 +69,26 @@ class S3Uploader {
         };
     }
 
-    private getNextIndex: Promise<number> = new Promise((resolve, reject) => {
-        this.myS3.listObjectsV2(
-            { Bucket: this.bucketName, Prefix: this.objectPrefix },
-            (err: AWSError, data: S3.Types.ListObjectsOutput) => {
-                if (err) {
-                    return reject(err);
-                }
-                const index: number = this.findIndex(data.Contents as S3.ObjectList) as number;
+    private getNextIndex: () => Promise<number> = () => {
+        return new Promise((resolve, reject) => {
+            this.myS3.listObjectsV2(
+                { Bucket: this.bucketName, Prefix: this.objectPrefix },
+                (err: AWSError, data: S3.Types.ListObjectsOutput) => {
+                    if (err) {
+                        return reject(err);
+                    }
+                    const index: number = this.findIndex(data.Contents as S3.ObjectList) as number;
 
-                return resolve(index + 1);
-            },
-        );
-    });
+                    return resolve(index + 1);
+                },
+            );
+        });
+    };
 
     main(): void {
         (async () => {
             try {
-                const index: number = await this.getNextIndex;
+                const index: number = await this.getNextIndex();
                 const formattedIndex: string = S3Uploader.formatIndex(index);
 
                 const htmlFiles = glob.sync('**/*.html', this.globOptions);
