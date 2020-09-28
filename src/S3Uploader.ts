@@ -87,7 +87,7 @@ class S3Uploader {
         (async () => {
             try {
                 const index: number = await this.getNextIndex;
-                const formattedIndex: string = this.formatIndex(index);
+                const formattedIndex: string = S3Uploader.formatIndex(index);
 
                 const htmlFiles = glob.sync('**/*.html', this.globOptions);
                 const cssFiles = glob.sync('**/*.css', this.globOptions);
@@ -118,7 +118,7 @@ class S3Uploader {
      * @param index - The index number.
      * @returns Transformed number index into string value in format of of '0000.
      */
-    private formatIndex(index: number): string {
+    private static formatIndex(index: number): string {
         let formattedNumber = index.toString();
 
         if (index < 10) {
@@ -136,7 +136,7 @@ class S3Uploader {
      * @param index - The index number.
      * @returns Transformed number index into number type value.
      */
-    private processFormattedNumber(index: string): number {
+    private static processFormattedNumber(index: string): number {
         const brokenIndexDigits = index.split('');
         const brokenIndexDigitsCount = brokenIndexDigits.length;
 
@@ -189,7 +189,7 @@ class S3Uploader {
                 })
                 // Turn the strings into numbers
                 .map((index: string) => {
-                    return this.processFormattedNumber(index);
+                    return S3Uploader.processFormattedNumber(index);
                 })
                 // Sort the number by the highest numbers
                 .sort((a: number, b: number) => b - a);
