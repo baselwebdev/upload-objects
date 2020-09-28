@@ -1,54 +1,12 @@
 /**
  * @file Upload files to S3.
- *
  * */
+
 import S3 from 'aws-sdk/clients/s3';
 import fs from 'fs';
 import glob from 'glob';
 import { AWSError } from 'aws-sdk/lib/error';
-import yargs from 'yargs';
-
-const projectPath = __dirname + '/../';
-
-yargs
-    .option('bn', {
-        alias: 'bucketname',
-        describe: 'The AWS bucketname',
-        type: 'string',
-        demandOption: true,
-    })
-    .option('dpf', {
-        alias: 'directoryprefix',
-        describe: 'The prefix for the directory',
-        type: 'string',
-        demandOption: true,
-    })
-    .option('ifp', {
-        alias: 'entryfile',
-        describe: 'The entry point file',
-        type: 'string',
-        default: 'Index.html',
-    })
-    .option('ufp', {
-        alias: 'uploadfilepath',
-        describe: 'The path to files you want to upload to S3',
-        type: 'string',
-        default: projectPath + 'uploads/files/',
-    }).argv;
-
-interface S3UploaderOptions {
-    bucketName: string;
-    objectPrefix: string;
-    indexPath: string;
-    uploadFileDirectory: string;
-}
-
-const options: S3UploaderOptions = {
-    bucketName: yargs.argv.bucketname as string,
-    objectPrefix: yargs.argv.directoryprefix as string,
-    indexPath: yargs.argv.entryfile as string,
-    uploadFileDirectory: yargs.argv.uploadfilepath as string,
-};
+import { S3UploaderOptions } from '../S3Uploader';
 
 class S3Uploader {
     private myS3: S3;
@@ -85,7 +43,7 @@ class S3Uploader {
         });
     };
 
-    main(): void {
+    startUpload(): void {
         (async () => {
             try {
                 const index: number = await this.getNextIndex();
@@ -231,8 +189,4 @@ class S3Uploader {
     }
 }
 
-const hello = new S3Uploader(options);
-
-hello.main();
-
-// export default S3Uploader;
+export default S3Uploader;
