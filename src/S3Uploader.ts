@@ -7,43 +7,23 @@ import fs from 'fs';
 import glob from 'glob';
 import { AWSError } from 'aws-sdk/lib/error';
 import { S3UploaderOptions } from '../S3Uploader';
+import CloudUploader from './CloudUploader';
 
-class S3Uploader {
+class S3Uploader extends CloudUploader {
     private myS3: S3;
     private readonly bucketName: string;
-    private readonly objectPrefix: string;
-    private readonly indexPath: string;
-    private readonly uploadFileDirectory: string;
     private readonly globOptions: { cwd: string };
 
     constructor(options: S3UploaderOptions) {
+        super(options);
         this.myS3 = new S3();
         this.bucketName = options.bucketName;
-        this.objectPrefix = options.objectPrefix + '_';
-        this.indexPath = '/' + options.indexPath;
-        this.uploadFileDirectory = options.uploadFileDirectory;
         this.globOptions = {
             cwd: this.uploadFileDirectory,
         };
     }
 
-    private getNextIndex: () => Promise<number> = () => {
-        return new Promise((resolve, reject) => {
-            this.myS3.listObjectsV2(
-                { Bucket: this.bucketName, Prefix: this.objectPrefix },
-                (err: AWSError, data: S3.Types.ListObjectsOutput) => {
-                    if (err) {
-                        return reject(err);
-                    }
-                    const index: number = this.findIndex(data.Contents as S3.ObjectList) as number;
-
-                    return resolve(index + 1);
-                },
-            );
-        });
-    };
-
-    startUpload(): void {
+    public startUpload(): void {
         (async () => {
             try {
                 const index: number = await this.getNextIndex();
@@ -73,6 +53,22 @@ class S3Uploader {
             }
         })();
     }
+
+    private getNextIndex: () => Promise<number> = () => {
+        return new Promise((resolve, reject) => {
+            this.myS3.listObjectsV2(
+                { Bucket: this.bucketName, Prefix: this.objectPrefix },
+                (err: AWSError, data: S3.Types.ListObjectsOutput) => {
+                    if (err) {
+                        return reject(err);
+                    }
+                    const index: number = this.findIndex(data.Contents as S3.ObjectList) as number;
+
+                    return resolve(index + 1);
+                },
+            );
+        });
+    };
 
     /**
      * @param index - The index number.

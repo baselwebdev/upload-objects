@@ -9,25 +9,25 @@ import S3Uploader from './S3Uploader';
 const projectPath = __dirname + '/../';
 
 yargs
-    .option('bn', {
+    .option('b', {
         alias: 'bucketname',
         describe: 'The AWS bucketname',
         type: 'string',
         demandOption: true,
     })
-    .option('dpf', {
+    .option('d', {
         alias: 'directoryprefix',
         describe: 'The prefix for the directory',
         type: 'string',
         demandOption: true,
     })
-    .option('ifp', {
+    .option('e', {
         alias: 'entryfile',
         describe: 'The entry point file',
         type: 'string',
         default: 'Index.html',
     })
-    .option('ufp', {
+    .option('u', {
         alias: 'uploadfilepath',
         describe: 'The path to files you want to upload to S3',
         type: 'string',
