@@ -13,6 +13,7 @@ class S3Uploader extends CloudUploader {
     private myS3: S3;
     private readonly bucketName: string;
     private readonly globOptions: { cwd: string };
+    protected formattedNumber: string;
 
     constructor(options: S3UploaderOptions) {
         super(options);
@@ -21,13 +22,16 @@ class S3Uploader extends CloudUploader {
         this.globOptions = {
             cwd: this.uploadFileDirectory,
         };
+        this.formattedNumber = '';
     }
 
     public startUpload(): void {
         (async () => {
             try {
-                const index: number = await this.getNextIndex();
-                const formattedIndex: string = S3Uploader.formatIndex(index);
+                await this.getNextIndex().then((index) => {
+                    this.indexToString(index);
+                    this.printUrl();
+                });
 
                 const htmlFiles = glob.sync('**/*.html', this.globOptions);
                 const cssFiles = glob.sync('**/*.css', this.globOptions);
@@ -35,19 +39,11 @@ class S3Uploader extends CloudUploader {
                 const jsChunks = glob.sync('**/*.js.map', this.globOptions);
                 const cssChunks = glob.sync('**/*.css.map', this.globOptions);
 
-                this.uploadFiles(htmlFiles, 'text/html', formattedIndex);
-                this.uploadFiles(cssFiles, 'text/css', formattedIndex);
-                this.uploadFiles(jsFiles, 'text/js', formattedIndex);
-                this.uploadFiles(cssChunks, 'text/css', formattedIndex);
-                this.uploadFiles(jsChunks, 'text/js', formattedIndex);
-
-                console.log(
-                    'Url is: ' +
-                        'https://baselwebdev2.s3.eu-west-2.amazonaws.com/' +
-                        this.objectPrefix +
-                        formattedIndex +
-                        this.indexPath,
-                );
+                this.uploadFiles(htmlFiles, 'text/html');
+                this.uploadFiles(cssFiles, 'text/css');
+                this.uploadFiles(jsFiles, 'text/js');
+                this.uploadFiles(cssChunks, 'text/css');
+                this.uploadFiles(jsChunks, 'text/js');
             } catch (e) {
                 console.log(e.message);
             }
@@ -71,10 +67,9 @@ class S3Uploader extends CloudUploader {
     };
 
     /**
-     * @param index - The index number.
-     * @returns Transformed number index into string value in format of of '0000.
+     * @param index - The index number which will be transformed into a string in a format of '0000'.
      */
-    private static formatIndex(index: number): string {
+    protected indexToString(index: number): void {
         let formattedNumber = index.toString();
 
         if (index < 10) {
@@ -85,14 +80,24 @@ class S3Uploader extends CloudUploader {
             formattedNumber = '0' + index.toString();
         }
 
-        return formattedNumber;
+        this.formattedNumber = formattedNumber;
+    }
+
+    public printUrl(): void {
+        console.log(
+            'Url is: ' +
+                'https://baselwebdev2.s3.eu-west-2.amazonaws.com/' +
+                this.objectPrefix +
+                this.formattedNumber +
+                this.indexPath,
+        );
     }
 
     /**
      * @param index - The index number.
      * @returns Transformed number index into number type value.
      */
-    private static processFormattedNumber(index: string): number {
+    private static indexToNumber(index: string): number {
         const brokenIndexDigits = index.split('');
         const brokenIndexDigitsCount = brokenIndexDigits.length;
 
@@ -145,7 +150,7 @@ class S3Uploader extends CloudUploader {
                 })
                 // Turn the strings into numbers
                 .map((index: string) => {
-                    return S3Uploader.processFormattedNumber(index);
+                    return S3Uploader.indexToNumber(index);
                 })
                 // Sort the number by the highest numbers
                 .sort((a: number, b: number) => b - a);
@@ -159,16 +164,15 @@ class S3Uploader extends CloudUploader {
     /**
      * @param customElementFiles - The files to be uploaded to S3.
      * @param contentType - The type of files to be uploaded to S3.
-     * @param index - The index value attached to directory name that the uploaded files will be part of.
      */
-    private uploadFiles(customElementFiles: string[], contentType: string, index: string): void {
+    private uploadFiles(customElementFiles: string[], contentType: string): void {
         const s3Options: S3.ManagedUpload.ManagedUploadOptions = {};
 
         customElementFiles.map((filePath: string) => {
             const file = fs.createReadStream(this.uploadFileDirectory + filePath);
             const s3Params: S3.Types.PutObjectRequest = {
                 Bucket: this.bucketName,
-                Key: this.objectPrefix + index + '/' + filePath,
+                Key: this.objectPrefix + this.formattedNumber + '/' + filePath,
                 Body: file,
                 ContentType: contentType,
                 ACL: 'public-read',

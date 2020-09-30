@@ -16,5 +16,5 @@ export default abstract class CloudUploader {
 
     public abstract startUpload(): void;
 
-    public printUrl(): void {}
+    public abstract printUrl(): void;
 }
