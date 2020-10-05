@@ -8,12 +8,13 @@ import glob from 'glob';
 import { AWSError } from 'aws-sdk/lib/error';
 import { S3UploaderOptions } from '../S3Uploader';
 import CloudUploader from './CloudUploader';
+import { ManagedUpload } from 'aws-sdk/clients/s3';
 
 class S3Uploader extends CloudUploader {
     private myS3: S3;
     private readonly bucketName: string;
     private readonly globOptions: { cwd: string };
-    protected formattedNumber: string;
+    protected index: string;
 
     constructor(options: S3UploaderOptions) {
         super(options);
@@ -22,15 +23,14 @@ class S3Uploader extends CloudUploader {
         this.globOptions = {
             cwd: this.uploadFileDirectory,
         };
-        this.formattedNumber = '';
+        this.index = '';
     }
 
-    public startUpload(): void {
-        (async () => {
+    public startUpload(): Promise<boolean> {
+        return (async () => {
             try {
                 await this.getNextIndex().then((index) => {
                     this.indexToString(index);
-                    this.printUrl();
                 });
 
                 const htmlFiles = glob.sync('**/*.html', this.globOptions);
@@ -39,13 +39,28 @@ class S3Uploader extends CloudUploader {
                 const jsChunks = glob.sync('**/*.js.map', this.globOptions);
                 const cssChunks = glob.sync('**/*.css.map', this.globOptions);
 
-                this.uploadFiles(htmlFiles, 'text/html');
-                this.uploadFiles(cssFiles, 'text/css');
-                this.uploadFiles(jsFiles, 'text/js');
-                this.uploadFiles(cssChunks, 'text/css');
-                this.uploadFiles(jsChunks, 'text/js');
+                const results1 = this.uploadFiles(htmlFiles, 'text/html');
+                const results2 = this.uploadFiles(cssFiles, 'text/css');
+                const results3 = this.uploadFiles(jsFiles, 'text/js');
+                const results4 = this.uploadFiles(cssChunks, 'text/css');
+                const results5 = this.uploadFiles(jsChunks, 'text/js');
+
+                await Promise.all(results1.concat(results2, results3, results4, results5))
+                    .catch((error) => {
+                        throw Error(error);
+                    })
+                    .then((result: ManagedUpload.SendData[]) => {
+                        result.map((item) => {
+                            console.log('Successfully uploaded file to:' + item.Location);
+                        });
+                        console.log('Finished uploading the files.');
+                    });
+
+                return true;
             } catch (e) {
                 console.log(e.message);
+
+                return false;
             }
         })();
     }
@@ -80,15 +95,15 @@ class S3Uploader extends CloudUploader {
             formattedNumber = '0' + index.toString();
         }
 
-        this.formattedNumber = formattedNumber;
+        this.index = formattedNumber;
     }
 
     public printUrl(): void {
         console.log(
-            'Url is: ' +
+            'Entry url is: ' +
                 'https://baselwebdev2.s3.eu-west-2.amazonaws.com/' +
                 this.objectPrefix +
-                this.formattedNumber +
+                this.index +
                 this.indexPath,
         );
     }
@@ -165,27 +180,25 @@ class S3Uploader extends CloudUploader {
      * @param customElementFiles - The files to be uploaded to S3.
      * @param contentType - The type of files to be uploaded to S3.
      */
-    private uploadFiles(customElementFiles: string[], contentType: string): void {
+    private uploadFiles(customElementFiles: string[], contentType: string): Promise<ManagedUpload.SendData>[] {
         const s3Options: S3.ManagedUpload.ManagedUploadOptions = {};
+
+        const uploads: Promise<ManagedUpload.SendData>[] = [];
 
         customElementFiles.map((filePath: string) => {
             const file = fs.createReadStream(this.uploadFileDirectory + filePath);
             const s3Params: S3.Types.PutObjectRequest = {
                 Bucket: this.bucketName,
-                Key: this.objectPrefix + this.formattedNumber + '/' + filePath,
+                Key: this.objectPrefix + this.index + '/' + filePath,
                 Body: file,
                 ContentType: contentType,
                 ACL: 'public-read',
             };
 
-            this.myS3.upload(s3Params, s3Options, (error: Error, data: S3.ManagedUpload.SendData) => {
-                if (error) {
-                    console.log('Error', error);
-                } else {
-                    console.log('Successfully uploaded file to: ' + data.Location);
-                }
-            });
+            uploads.push(this.myS3.upload(s3Params, s3Options).promise());
         });
+
+        return uploads;
     }
 }
 

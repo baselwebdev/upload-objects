@@ -43,4 +43,8 @@ const options: S3UploaderOptions = {
 
 const s3 = new S3Uploader(options);
 
-s3.startUpload();
+s3.startUpload().then((result) => {
+    if (result) {
+        s3.printUrl();
+    }
+});
