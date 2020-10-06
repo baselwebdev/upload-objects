@@ -35,19 +35,9 @@ class S3Uploader extends CloudUploader {
                     this.indexToString(index);
                 });
 
-                const htmlFiles = glob.sync('**/*.html', this.globOptions);
-                const cssFiles = glob.sync('**/*.css', this.globOptions);
-                const jsFiles = glob.sync('**/*.js', this.globOptions);
-                const jsChunks = glob.sync('**/*.js.map', this.globOptions);
-                const cssChunks = glob.sync('**/*.css.map', this.globOptions);
+                const files = this.findFiles();
 
-                const results1 = this.uploadFiles(htmlFiles, 'text/html');
-                const results2 = this.uploadFiles(cssFiles, 'text/css');
-                const results3 = this.uploadFiles(jsFiles, 'text/js');
-                const results4 = this.uploadFiles(cssChunks, 'text/css');
-                const results5 = this.uploadFiles(jsChunks, 'text/js');
-
-                await Promise.all(results1.concat(results2, results3, results4, results5))
+                await this.upload(files)
                     .catch((error) => {
                         throw Error(error);
                     })
@@ -66,7 +56,7 @@ class S3Uploader extends CloudUploader {
 
     public printUploadResults(): void {
         this.uploads.map((item) => {
-            console.log('Successfully uploaded files to:' + item.Location);
+            console.log('Successfully uploaded files to: ' + item.Location);
         });
     }
 
@@ -186,7 +176,7 @@ class S3Uploader extends CloudUploader {
      * @param contentType - The type of files to be uploaded to S3.
      * @returns Promise<ManagedUpload.SendData>[] - A collection of upload promises.
      */
-    private uploadFiles(customElementFiles: string[], contentType: string): Promise<ManagedUpload.SendData>[] {
+    private collectUploadFiles(customElementFiles: string[], contentType: string): Promise<ManagedUpload.SendData>[] {
         const s3Options: S3.ManagedUpload.ManagedUploadOptions = {};
 
         const uploads: Promise<ManagedUpload.SendData>[] = [];
@@ -205,6 +195,26 @@ class S3Uploader extends CloudUploader {
         });
 
         return uploads;
+    }
+
+    private findFiles(): string[][] {
+        const htmlFiles = glob.sync('**/*.html', this.globOptions);
+        const cssFiles = glob.sync('**/*.css', this.globOptions);
+        const jsFiles = glob.sync('**/*.js', this.globOptions);
+        const jsChunks = glob.sync('**/*.js.map', this.globOptions);
+        const cssChunks = glob.sync('**/*.css.map', this.globOptions);
+
+        return [htmlFiles, cssFiles, jsFiles, jsChunks, cssChunks];
+    }
+
+    private async upload(files: string[][]): Promise<any> {
+        const results1 = this.collectUploadFiles(files[0], 'text/html');
+        const results2 = this.collectUploadFiles(files[1], 'text/css');
+        const results3 = this.collectUploadFiles(files[2], 'text/js');
+        const results4 = this.collectUploadFiles(files[3], 'text/css');
+        const results5 = this.collectUploadFiles(files[4], 'text/js');
+
+        return Promise.all(results1.concat(results2, results3, results4, results5));
     }
 }
 
