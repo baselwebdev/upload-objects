@@ -8,6 +8,6 @@ export interface S3UploaderOptions extends CloudUploadOptions {
 
 export interface CloudUploadOptions {
     objectPrefix: string;
-    indexPath: string;
-    uploadFileDirectory: string;
+    indexPath?: string;
+    uploadFileDirectory?: string;
 }

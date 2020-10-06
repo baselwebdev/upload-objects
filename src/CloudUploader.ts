@@ -6,15 +6,13 @@ import { CloudUploadOptions } from '../S3Uploader';
 export default abstract class CloudUploader {
     protected readonly objectPrefix: string;
     protected readonly indexPath: string;
-    protected readonly uploadFileDirectory: string;
+    protected readonly uploadFileDirectory: string = __dirname + '/../uploads/files/';
 
     protected constructor(options: CloudUploadOptions) {
         this.objectPrefix = options.objectPrefix + '_';
         this.indexPath = '/' + options.indexPath;
-        this.uploadFileDirectory = options.uploadFileDirectory;
+        this.uploadFileDirectory = options.uploadFileDirectory ?? this.uploadFileDirectory;
     }
 
-    public abstract startUpload(): void;
-
-    public abstract printUrl(): void;
+    public abstract printUrl(index: string): void;
 }

@@ -12,55 +12,15 @@ import { ManagedUpload } from 'aws-sdk/clients/s3';
 
 class S3Uploader extends CloudUploader {
     private myS3: S3;
-    private readonly bucketName: string;
-    private readonly globOptions: { cwd: string };
-    protected index: string;
-    protected uploads: ManagedUpload.SendData[];
+    public readonly bucketName: string;
 
     constructor(options: S3UploaderOptions) {
         super(options);
         this.myS3 = new S3();
         this.bucketName = options.bucketName;
-        this.uploads = [];
-        this.globOptions = {
-            cwd: this.uploadFileDirectory,
-        };
-        this.index = '';
     }
 
-    public startUpload(): Promise<boolean> {
-        return (async () => {
-            try {
-                await this.getNextIndex().then((index) => {
-                    this.indexToString(index);
-                });
-
-                const files = this.findFiles();
-
-                await this.upload(files)
-                    .catch((error) => {
-                        throw Error(error);
-                    })
-                    .then((result: ManagedUpload.SendData[]) => {
-                        this.uploads = result;
-                    });
-
-                return true;
-            } catch (e) {
-                console.log(e.message);
-
-                return false;
-            }
-        })();
-    }
-
-    public printUploadResults(): void {
-        this.uploads.map((item) => {
-            console.log('Successfully uploaded files to: ' + item.Location);
-        });
-    }
-
-    private getNextIndex: () => Promise<number> = () => {
+    public getNextIndex: () => Promise<number> = () => {
         return new Promise((resolve, reject) => {
             this.myS3.listObjectsV2(
                 { Bucket: this.bucketName, Prefix: this.objectPrefix },
@@ -79,7 +39,7 @@ class S3Uploader extends CloudUploader {
     /**
      * @param index - The index number which will be transformed into a string in a format of '0000'.
      */
-    protected indexToString(index: number): void {
+    public indexToString(index: number): string {
         let formattedNumber = index.toString();
 
         if (index < 10) {
@@ -90,15 +50,15 @@ class S3Uploader extends CloudUploader {
             formattedNumber = '0' + index.toString();
         }
 
-        this.index = formattedNumber;
+        return formattedNumber;
     }
 
-    public printUrl(): void {
+    public printUrl(index: string): void {
         console.log(
             'Entry url is: ' +
                 'https://baselwebdev2.s3.eu-west-2.amazonaws.com/' +
                 this.objectPrefix +
-                this.index +
+                index +
                 this.indexPath,
         );
     }
@@ -197,17 +157,20 @@ class S3Uploader extends CloudUploader {
         return uploads;
     }
 
-    private findFiles(): string[][] {
-        const htmlFiles = glob.sync('**/*.html', this.globOptions);
-        const cssFiles = glob.sync('**/*.css', this.globOptions);
-        const jsFiles = glob.sync('**/*.js', this.globOptions);
-        const jsChunks = glob.sync('**/*.js.map', this.globOptions);
-        const cssChunks = glob.sync('**/*.css.map', this.globOptions);
+    public findFiles(): string[][] {
+        const globOptions = {
+            cwd: this.uploadFileDirectory,
+        };
+        const htmlFiles = glob.sync('**/*.html', globOptions);
+        const cssFiles = glob.sync('**/*.css', globOptions);
+        const jsFiles = glob.sync('**/*.js', globOptions);
+        const jsChunks = glob.sync('**/*.js.map', globOptions);
+        const cssChunks = glob.sync('**/*.css.map', globOptions);
 
         return [htmlFiles, cssFiles, jsFiles, jsChunks, cssChunks];
     }
 
-    private async upload(files: string[][]): Promise<any> {
+    public async upload(files: string[][]): Promise<any> {
         const results1 = this.collectUploadFiles(files[0], 'text/html');
         const results2 = this.collectUploadFiles(files[1], 'text/css');
         const results3 = this.collectUploadFiles(files[2], 'text/js');

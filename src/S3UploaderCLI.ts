@@ -5,6 +5,7 @@
 import yargs from 'yargs';
 import { S3UploaderOptions } from '../S3Uploader';
 import S3Uploader from './S3Uploader';
+import { ManagedUpload } from 'aws-sdk/clients/s3';
 
 const projectPath = __dirname + '/../';
 
@@ -41,11 +42,26 @@ const options: S3UploaderOptions = {
     uploadFileDirectory: yargs.argv.uploadfilepath as string,
 };
 
-const s3 = new S3Uploader(options);
+try {
+    const s3 = new S3Uploader(options);
+    let indexString: string;
 
-s3.startUpload().then((result) => {
-    if (result) {
-        s3.printUploadResults();
-        s3.printUrl();
-    }
-});
+    s3.getNextIndex().then((index) => {
+        indexString = s3.indexToString(index);
+    });
+
+    const files = s3.findFiles();
+
+    s3.upload(files)
+        .catch((error) => {
+            throw Error(error);
+        })
+        .then((result: ManagedUpload.SendData[]) => {
+            result.map((item) => {
+                console.log('Successfully uploaded files to: ' + item.Location);
+            });
+            s3.printUrl(indexString);
+        });
+} catch (e) {
+    console.log(e.message);
+}
