@@ -45,6 +45,7 @@ const s3 = new S3Uploader(options);
 
 s3.startUpload().then((result) => {
     if (result) {
+        s3.printUploadResults();
         s3.printUrl();
     }
 });

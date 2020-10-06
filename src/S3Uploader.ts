@@ -15,11 +15,13 @@ class S3Uploader extends CloudUploader {
     private readonly bucketName: string;
     private readonly globOptions: { cwd: string };
     protected index: string;
+    protected uploads: ManagedUpload.SendData[];
 
     constructor(options: S3UploaderOptions) {
         super(options);
         this.myS3 = new S3();
         this.bucketName = options.bucketName;
+        this.uploads = [];
         this.globOptions = {
             cwd: this.uploadFileDirectory,
         };
@@ -50,10 +52,7 @@ class S3Uploader extends CloudUploader {
                         throw Error(error);
                     })
                     .then((result: ManagedUpload.SendData[]) => {
-                        result.map((item) => {
-                            console.log('Successfully uploaded file to:' + item.Location);
-                        });
-                        console.log('Finished uploading the files.');
+                        this.uploads = result;
                     });
 
                 return true;
@@ -63,6 +62,12 @@ class S3Uploader extends CloudUploader {
                 return false;
             }
         })();
+    }
+
+    public printUploadResults(): void {
+        this.uploads.map((item) => {
+            console.log('Successfully uploaded files to:' + item.Location);
+        });
     }
 
     private getNextIndex: () => Promise<number> = () => {
