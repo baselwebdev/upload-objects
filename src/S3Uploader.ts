@@ -20,21 +20,18 @@ class S3Uploader extends CloudUploader {
         this.bucketName = options.bucketName;
     }
 
-    public getNextIndex: () => Promise<number> = () => {
-        return new Promise((resolve, reject) => {
-            this.myS3.listObjectsV2(
-                { Bucket: this.bucketName, Prefix: this.objectPrefix },
-                (err: AWSError, data: S3.Types.ListObjectsOutput) => {
-                    if (err) {
-                        return reject(err);
-                    }
-                    const index: number = this.findIndex(data.Contents as S3.ObjectList) as number;
+    public async getNextIndex(): Promise<number> {
+        const data = await this.myS3
+            .listObjectsV2({ Bucket: this.bucketName, Prefix: this.objectPrefix })
+            .promise()
+            .catch((err: AWSError) => {
+                throw Error(err.message);
+            });
 
-                    return resolve(index + 1);
-                },
-            );
-        });
-    };
+        const index: number = this.findIndex(data.Contents as S3.ObjectList) as number;
+
+        return index + 1;
+    }
 
     /**
      * @param index - The index number which will be transformed into a string in a format of '0000'.
