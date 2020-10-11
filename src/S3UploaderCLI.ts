@@ -48,20 +48,20 @@ try {
 
     s3.getNextIndex().then((index) => {
         indexString = s3.indexToString(index);
-    });
 
-    const files = s3.findFiles();
+        const files = s3.findFiles();
 
-    s3.upload(files)
-        .catch((error) => {
-            throw Error(error);
-        })
-        .then((result: ManagedUpload.SendData[]) => {
-            result.map((item) => {
-                console.log('Successfully uploaded files to: ' + item.Location);
+        s3.upload(files, indexString)
+            .catch((error) => {
+                throw Error(error);
+            })
+            .then((result: ManagedUpload.SendData[]) => {
+                result.map((item) => {
+                    console.log('Successfully uploaded files to: ' + item.Location);
+                });
+                s3.printUrl(indexString);
             });
-            s3.printUrl(indexString);
-        });
+    });
 } catch (e) {
     console.log(e.message);
 }
