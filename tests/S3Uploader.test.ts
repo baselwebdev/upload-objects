@@ -13,8 +13,19 @@ const options: S3UploaderOptions = {
 };
 
 describe('S3Uploader', () => {
+    let s3: S3Uploader;
+
+    beforeEach(() => {
+        s3 = new S3Uploader(options);
+    });
+
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
     it('calls constructor once', () => {
-        new S3Uploader(options);
         expect(S3Uploader).toBeCalledTimes(1);
     });
+
+    it('returns the correct index value', () => {});
 });
