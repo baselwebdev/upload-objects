@@ -1,5 +1,5 @@
 /**
- * @file Defining an abstract class to allow user to implement/extend their own S3Uploader logic.
+ * @file Defining an abstract class to allow user to implement/extend their own S3Object logic.
  * */
 import { CloudUploadOptions } from '../S3Uploader';
 

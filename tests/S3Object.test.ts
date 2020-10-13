@@ -1,13 +1,13 @@
 /**
- * @file S3Uploader tests.
+ * @file S3Object tests.
  * */
 
-import S3Uploader from '../src/S3Uploader';
+import S3Object from '../src/S3Object';
 import S3 from 'aws-sdk/clients/s3';
 import { S3UploaderOptions } from '../S3Uploader';
 import { mocked } from 'ts-jest/utils';
 
-jest.mock('../src/S3Uploader');
+jest.mock('../src/S3Object');
 
 const mockListObjectsV2 = jest.fn(() => {
     return true;
@@ -29,12 +29,12 @@ const options: S3UploaderOptions = {
     objectPrefix: 's3_tester',
 };
 
-describe('S3Uploader', () => {
+describe('S3Object', () => {
     const mockedS3 = mocked(new S3());
-    let s3: S3Uploader;
+    let s3: S3Object;
 
     beforeEach(() => {
-        s3 = new S3Uploader(options);
+        s3 = new S3Object(options);
         mockedS3.listObjectsV2.mockClear();
     });
 
@@ -43,7 +43,7 @@ describe('S3Uploader', () => {
     });
 
     it('calls constructor once', () => {
-        expect(S3Uploader).toBeCalledTimes(1);
+        expect(S3Object).toBeCalledTimes(1);
     });
 
     it('returns the correct index value', () => {

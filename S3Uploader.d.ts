@@ -1,5 +1,5 @@
 /**
- * @file Definition for S3Uploader.
+ * @file Definition for S3Object.
  * */
 
 export interface S3UploaderOptions extends CloudUploadOptions {

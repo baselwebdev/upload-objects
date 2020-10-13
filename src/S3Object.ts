@@ -5,12 +5,11 @@
 import S3 from 'aws-sdk/clients/s3';
 import fs from 'fs';
 import glob from 'glob';
-import { AWSError } from 'aws-sdk/lib/error';
 import { S3UploaderOptions } from '../S3Uploader';
 import CloudUploader from './CloudUploader';
 import { ManagedUpload } from 'aws-sdk/clients/s3';
 
-class S3Uploader extends CloudUploader {
+export default class S3Object extends CloudUploader {
     private myS3: S3;
     public readonly bucketName: string;
 
@@ -18,19 +17,6 @@ class S3Uploader extends CloudUploader {
         super(options);
         this.myS3 = new S3();
         this.bucketName = options.bucketName;
-    }
-
-    public async getNextIndex(): Promise<number> {
-        const data = await this.myS3
-            .listObjectsV2({ Bucket: this.bucketName, Prefix: this.objectPrefix })
-            .promise()
-            .catch((err: AWSError) => {
-                throw Error(err.message);
-            });
-
-        const index: number = this.findIndex(data.Contents as S3.ObjectList) as number;
-
-        return index + 1;
     }
 
     /**
@@ -86,7 +72,7 @@ class S3Uploader extends CloudUploader {
      * @param objects - The aws S3 object list items.
      * @returns Return the index value for the latest object in the S3 object list for the given prefix.
      */
-    public findIndex(objects: S3.ObjectList): number {
+    public getNextIndex(objects: S3.ObjectList): number {
         let index = 0;
 
         if (objects.length > 0) {
@@ -117,12 +103,13 @@ class S3Uploader extends CloudUploader {
                 })
                 // Turn the strings into numbers
                 .map((index: string) => {
-                    return S3Uploader.indexToNumber(index);
+                    return S3Object.indexToNumber(index);
                 })
                 // Sort the number by the highest numbers
                 .sort((a: number, b: number) => b - a);
 
             index = objectIndex[0];
+            index += 1;
         }
 
         return index;
@@ -172,7 +159,7 @@ class S3Uploader extends CloudUploader {
         return [htmlFiles, cssFiles, jsFiles, jsChunks, cssChunks];
     }
 
-    public async upload(files: string[][], index: string): Promise<any> {
+    public async upload(files: string[][], index: string): Promise<ManagedUpload.SendData[]> {
         const results1 = this.collectUploadFiles(files[0], 'text/html', index);
         const results2 = this.collectUploadFiles(files[1], 'text/css', index);
         const results3 = this.collectUploadFiles(files[2], 'text/js', index);
@@ -182,5 +169,3 @@ class S3Uploader extends CloudUploader {
         return Promise.all(results1.concat(results2, results3, results4, results5));
     }
 }
-
-export default S3Uploader;

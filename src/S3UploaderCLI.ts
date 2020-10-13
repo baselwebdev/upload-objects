@@ -1,11 +1,12 @@
 /**
- * @file S3Uploader CLI logic.
+ * @file S3Object CLI logic.
  * */
 
 import yargs from 'yargs';
 import { S3UploaderOptions } from '../S3Uploader';
-import S3Uploader from './S3Uploader';
-import { ManagedUpload } from 'aws-sdk/clients/s3';
+import S3Object from './S3Object';
+import S3Manage from './S3Manage';
+import S3, { ManagedUpload } from 'aws-sdk/clients/s3';
 
 const projectPath = __dirname + '/../';
 
@@ -43,23 +44,27 @@ const options: S3UploaderOptions = {
 };
 
 try {
-    const s3 = new S3Uploader(options);
+    const object = new S3Object(options);
+    const manage = new S3Manage(options);
     let indexString: string;
 
-    s3.getNextIndex().then((index) => {
-        indexString = s3.indexToString(index);
+    manage.listUploads().then((objects: S3.ObjectList) => {
+        const nextIndex = object.getNextIndex(objects);
 
-        const files = s3.findFiles();
+        indexString = object.indexToString(nextIndex);
 
-        s3.upload(files, indexString)
-            .catch((error) => {
+        const files = object.findFiles();
+
+        object
+            .upload(files, indexString)
+            .catch((error: string) => {
                 throw Error(error);
             })
             .then((result: ManagedUpload.SendData[]) => {
                 result.map((item) => {
                     console.log('Successfully uploaded files to: ' + item.Location);
                 });
-                s3.printUrl(indexString);
+                object.printUrl(indexString);
             });
     });
 } catch (e) {
