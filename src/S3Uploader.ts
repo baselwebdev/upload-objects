@@ -86,7 +86,7 @@ class S3Uploader extends CloudUploader {
      * @param objects - The aws S3 object list items.
      * @returns Return the index value for the latest object in the S3 object list for the given prefix.
      */
-    private findIndex(objects: S3.ObjectList): number {
+    public findIndex(objects: S3.ObjectList): number {
         let index = 0;
 
         if (objects.length > 0) {
