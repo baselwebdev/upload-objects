@@ -3,9 +3,9 @@
  * */
 
 import yargs from 'yargs';
-import { S3UploaderOptions } from '../S3Uploader';
-import S3Object from './S3Object';
-import S3Manage from './S3Manage';
+import { S3UploaderOptions } from '../../index';
+import S3Object from './object';
+import S3Manage from './management';
 import S3, { ManagedUpload } from 'aws-sdk/clients/s3';
 
 const projectPath = __dirname + '/../';

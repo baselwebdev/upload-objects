@@ -2,7 +2,7 @@
  * @file S3Object tests.
  * */
 
-import S3Object from '../src/S3Object';
+import S3Object from '../src/s3/object';
 
 describe('S3Object', () => {
     const objectPrefix = 's3_tester_';

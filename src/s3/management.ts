@@ -1,9 +1,9 @@
 import { AWSError } from 'aws-sdk/lib/error';
 import S3, { ManagedUpload } from 'aws-sdk/clients/s3';
-import { S3UploaderOptions } from '../S3Uploader';
+import { S3UploaderOptions } from '../../index';
 import fs from 'fs';
 import glob from 'glob';
-import CloudUploader from './CloudUploader';
+import CloudUploader from '../CloudUploader';
 
 /**
  * @file AWS SDK S3 Usages.
