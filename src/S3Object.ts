@@ -50,7 +50,7 @@ export default class S3Object extends CloudUploader {
      * @param index - The index number.
      * @returns Transformed number index into number type value.
      */
-    private static indexToNumber(index: string): number {
+    public indexToNumber(index: string): number {
         const brokenIndexDigits = index.split('');
         const brokenIndexDigitsCount = brokenIndexDigits.length;
 
@@ -103,7 +103,7 @@ export default class S3Object extends CloudUploader {
                 })
                 // Turn the strings into numbers
                 .map((index: string) => {
-                    return S3Object.indexToNumber(index);
+                    return this.indexToNumber(index);
                 })
                 // Sort the number by the highest numbers
                 .sort((a: number, b: number) => b - a);

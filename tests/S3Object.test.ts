@@ -39,4 +39,11 @@ describe('S3Object', () => {
 
         expect(s3.getNextIndex(data)).toEqual(8);
     });
+
+    it('turns string into numbers', () => {
+        expect(s3.indexToNumber('0001')).toEqual(1);
+        expect(s3.indexToNumber('0065')).toEqual(65);
+        expect(s3.indexToNumber('0123')).toEqual(123);
+        expect(s3.indexToNumber('9955')).toEqual(9955);
+    });
 });
