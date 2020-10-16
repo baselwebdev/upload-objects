@@ -46,4 +46,11 @@ describe('S3Object', () => {
         expect(s3.indexToNumber('0123')).toEqual(123);
         expect(s3.indexToNumber('9955')).toEqual(9955);
     });
+
+    it('turns numbers into string', () => {
+        expect(s3.indexToString(1)).toEqual('0001');
+        expect(s3.indexToString(23)).toEqual('0023');
+        expect(s3.indexToString(340)).toEqual('0340');
+        expect(s3.indexToString(8866)).toEqual('8866');
+    });
 });
