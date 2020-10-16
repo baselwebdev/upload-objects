@@ -38,24 +38,24 @@ yargs
 
 const options: S3UploaderOptions = {
     bucketName: yargs.argv.bucketname as string,
-    objectPrefix: yargs.argv.directoryprefix as string,
+    objectPrefix: yargs.argv.directoryprefix + '_',
     indexPath: yargs.argv.entryfile as string,
     uploadFileDirectory: yargs.argv.uploadfilepath as string,
 };
 
 try {
-    const object = new S3Object(options);
+    const object = new S3Object();
     const manage = new S3Manage(options);
     let indexString: string;
 
     manage.listUploads().then((objects: S3.ObjectList) => {
-        const nextIndex = object.getNextIndex(objects);
+        const nextIndex = object.getNextIndex(objects, options.objectPrefix);
 
         indexString = object.indexToString(nextIndex);
 
-        const files = object.findFiles();
+        const files = manage.findFiles();
 
-        object
+        manage
             .upload(files, indexString)
             .catch((error: string) => {
                 throw Error(error);
@@ -64,7 +64,7 @@ try {
                 result.map((item) => {
                     console.log('Successfully uploaded files to: ' + item.Location);
                 });
-                object.printUrl(indexString);
+                manage.printUrl(indexString);
             });
     });
 } catch (e) {
