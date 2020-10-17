@@ -7,9 +7,9 @@ import { AWSError } from 'aws-sdk/lib/error';
 import S3, { ManagedUpload } from 'aws-sdk/clients/s3';
 import fs from 'fs';
 import glob from 'glob';
-import CloudUploader from '../CloudUploader';
+import Providers from '../providers';
 
-export default class S3Manage implements CloudUploader {
+export default class S3Manage implements Providers {
     private myS3: S3;
     public readonly bucketName: string;
     public readonly objectPrefix: string;
