@@ -1,13 +1,13 @@
+/**
+ * @file AWS S3 service management logic.
+ * */
+
+import { S3UploaderOptions } from './inteface';
 import { AWSError } from 'aws-sdk/lib/error';
 import S3, { ManagedUpload } from 'aws-sdk/clients/s3';
-import { S3UploaderOptions } from '../../index';
 import fs from 'fs';
 import glob from 'glob';
 import CloudUploader from '../CloudUploader';
-
-/**
- * @file AWS SDK S3 Usages.
- * */
 
 export default class S3Manage implements CloudUploader {
     private myS3: S3;

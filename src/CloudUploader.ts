@@ -1,7 +1,6 @@
 /**
  * @file Defining an abstract class to allow user to implement/extend their own S3Object logic.
  * */
-import { CloudUploadOptions } from '../S3Uploader';
 
 export default abstract class CloudUploader {
     public readonly objectPrefix: string;
@@ -13,4 +12,10 @@ export default abstract class CloudUploader {
         this.indexPath = '/' + options.indexPath;
         this.uploadFileDirectory = options.uploadFileDirectory ?? this.uploadFileDirectory;
     }
+}
+
+export interface CloudUploadOptions {
+    objectPrefix: string;
+    indexPath?: string;
+    uploadFileDirectory?: string;
 }

@@ -3,7 +3,7 @@
  * */
 
 import yargs from 'yargs';
-import { S3UploaderOptions } from '../../index';
+import { S3UploaderOptions } from './inteface';
 import S3Object from './object';
 import S3Manage from './management';
 import S3, { ManagedUpload } from 'aws-sdk/clients/s3';
