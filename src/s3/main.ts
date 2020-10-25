@@ -1,9 +1,12 @@
+/**
+ * @file S3 upload logic entry file.
+ * */
 import S3Object from './object';
 import S3Manage from './management';
 import S3, { ManagedUpload } from 'aws-sdk/clients/s3';
 import { S3UploaderOptions } from './inteface';
 
-export const main = (options: S3UploaderOptions) => {
+export const main = (options: S3UploaderOptions): void => {
     try {
         const object = new S3Object();
         const manage = new S3Manage(options);

@@ -46,7 +46,7 @@ export default class S3Object {
 
     /**
      * @param objects - The aws S3 object list items.
-     * @param objectPrefix
+     * @param objectPrefix - The prefix that is attached to object. Required to split the prefix from the index.
      * @returns Return the index value for the latest object in the S3 object list for the given prefix.
      */
     public getNextIndex(objects: S3.ObjectList, objectPrefix: string): number {

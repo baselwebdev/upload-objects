@@ -94,6 +94,7 @@ export default class S3Manage implements Providers {
                 'https://baselwebdev2.s3.eu-west-2.amazonaws.com/' +
                 this.objectPrefix +
                 index +
+                '/' +
                 this.indexPath,
         );
     }
