@@ -1,6 +1,6 @@
 {
   "name": "upload-objects",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "license": "MIT",
   "description": "Upload objects to static cloud hosting solutions.",
   "dependencies": {
